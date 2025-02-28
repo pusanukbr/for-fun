@@ -1,13 +1,17 @@
-<script setup lang="ts">
-import Game from './components/GameCanvas.vue'
-</script>
-
 <template>
     <div id="app">
-        <Game />
+        <h1>Моя ізометрична гра</h1>
+        <GameCanvas />
     </div>
 </template>
 
-<style scoped>
+<script lang="ts" setup>
+import GameCanvas from './components/GameCanvas.vue';
+</script>
 
+<style>
+#app {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
 </style>
