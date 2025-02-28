@@ -1,11 +1,16 @@
 export interface Tile {
-    type: string; // Тип клітинки (наприклад, "grass", "stone")
-    x: number;    // Ізометрична координата X
-    y: number;    // Ізометрична координата Y
+    type: string;
+    x: number;
+    y: number;
 }
 
 export interface GameMap {
     width: number;
     height: number;
     tiles: Tile[];
+}
+
+export interface Player {
+    x: number;
+    y: number;
 }
