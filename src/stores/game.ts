@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
-import type { GameMap } from '../types/game';
+import {defineStore} from 'pinia';
+import type {GameMap} from '../types/game';
 
 export interface Player {
     x: number; // Ізометрична координата X
@@ -18,8 +18,7 @@ export const useGameStore = defineStore('game', {
                 if (!response.ok) {
                     throw new Error(`Не вдалося завантажити map.json: ${response.status}`);
                 }
-                const mapData: GameMap = await response.json();
-                this.gameMap = mapData;
+                this.gameMap = await response.json();
             } catch (error) {
                 console.error('Помилка завантаження карти:', error);
             }

@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, watch } from 'vue';
-import { Application, Graphics, Sprite } from 'pixi.js';
+import { Application, Sprite, Assets, Graphics } from 'pixi.js';
 import { useGameStore } from '../stores/game';
 import { toScreenCoords, tileWidth, tileHeight } from '../utils/isoUtils';
 
@@ -13,60 +13,72 @@ const props = defineProps<{ app: Application }>();
 const gameStore = useGameStore();
 const { app } = props;
 
-let playerSprite: Sprite | Graphics | null = null;
+let playerSprite: Graphics | null = null;
 
-const renderMap = () => {
+// Мапа текстур для типів тайлів
+const tileTextures: Record<string, string> = {
+    grass: '/textures/grass.png',
+    stone: '/textures/stone.png',
+    water: '/textures/water.png',
+};
+
+// Завантаження текстур і рендеринг карти
+const renderMap = async () => {
     const { width, height } = gameStore.getMapSize;
     const tiles = gameStore.getTiles;
+
+    // Завантажуємо всі текстури
+    await Assets.load(Object.values(tileTextures));
 
     const offsetX = app.screen.width / 2 - (width * tileWidth) / 4;
     const offsetY = app.screen.height / 2 - (height * tileHeight) / 2;
 
-    // Рендеримо тайли
+    // Рендеримо тайли як спрайти
     tiles.forEach((tile) => {
-        const tileGraphic = new Graphics();
+        const texturePath = tileTextures[tile.type] || tileTextures.grass; // Запасний варіант
+        const tileSprite = Sprite.from(texturePath);
         const { screenX, screenY } = toScreenCoords(tile.x, tile.y);
 
-        let fillColor: number;
-        switch (tile.type) {
-            case 'grass':
-                fillColor = 0x00ff00;
-                break;
-            case 'stone':
-                fillColor = 0x666666;
-                break;
-            case 'water':
-                fillColor = 0x0000ff;
-                break;
-            default:
-                fillColor = 0xaaaaaa;
-        }
+        // Розтягуємо спрайт до розміру клітинки
+        tileSprite.width = tileWidth;
+        tileSprite.height = tileHeight;
 
-        tileGraphic
-            .moveTo(screenX, screenY - tileHeight / 2)
-            .lineTo(screenX + tileWidth / 2, screenY)
-            .lineTo(screenX, screenY + tileHeight / 2)
-            .lineTo(screenX - tileWidth / 2, screenY)
-            .closePath()
-            .fill({ color: fillColor })
-            .stroke({ width: 1, color: 0xffffff });
-
-        tileGraphic.x += offsetX;
-        tileGraphic.y += offsetY;
+        tileSprite.x = screenX + offsetX;
+        tileSprite.y = screenY + offsetY;
+        tileSprite.anchor.set(0.5); // Центруємо спрайт
 
         // Додаємо інтерактивність
-        tileGraphic.eventMode = 'static'; // Замість interactive у v8
-        tileGraphic.cursor = 'pointer';
-        tileGraphic.on('pointerdown', () => {
+        tileSprite.eventMode = 'static';
+        tileSprite.cursor = 'pointer';
+        tileSprite.on('pointerdown', () => {
             gameStore.movePlayer(tile.x, tile.y);
         });
 
-        app.stage.addChild(tileGraphic);
+        app.stage.addChild(tileSprite);
     });
 
-    // Рендеримо героя (для тесту — червоний круг)
+    // Рендеримо героя (тимчасово круг, але можна замінити на спрайт)
     playerSprite = new Graphics();
-    playerSprite.circle(0, 0, 10).fill({ color: 0xff0000 });
+    playerSprite.circle(0, 0, 5).fill({ color: 0xff0000 }); // Помилка: Sprite не має circle, виправимо нижче
+    updatePlayerPosition();
+    app.stage.addChild(playerSprite);
+};
+
+// Виправимо героя на Sprite (наприклад, із текстурою або Graphics)
+const renderPlayer = async () => {
+    if (playerSprite) app.stage.removeChild(playerSprite);
+    // Якщо є текстура героя, додай її в public і завантаж:
+    // await Assets.load('/textures/hero.png');
+    // playerSprite = Sprite.from('/textures/hero.png');
+    // playerSprite.anchor.set(0.5);
+
+    // Тимчасово використаємо Graphics для героя
+    playerSprite = new Sprite();
+    const graphics = new Graphics();
+    graphics.circle(0, 0, 10).fill({ color: 0xff0000 });
+    playerSprite.texture = app.renderer.generateTexture(graphics);
+    playerSprite.anchor.set(0.5);
+
     updatePlayerPosition();
     app.stage.addChild(playerSprite);
 };
@@ -85,10 +97,10 @@ const updatePlayerPosition = () => {
 
 onMounted(async () => {
     await gameStore.loadMap();
-    renderMap();
+    await renderMap();
+    // await renderPlayer();
 });
 
-// Слідкуємо за зміною позиції героя
 watch(
     () => gameStore.getPlayerPosition,
     () => {
