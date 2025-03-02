@@ -64,25 +64,6 @@ const renderMap = async () => {
     app.stage.addChild(playerSprite);
 };
 
-// Виправимо героя на Sprite (наприклад, із текстурою або Graphics)
-const renderPlayer = async () => {
-    if (playerSprite) app.stage.removeChild(playerSprite);
-    // Якщо є текстура героя, додай її в public і завантаж:
-    // await Assets.load('/textures/hero.png');
-    // playerSprite = Sprite.from('/textures/hero.png');
-    // playerSprite.anchor.set(0.5);
-
-    // Тимчасово використаємо Graphics для героя
-    playerSprite = new Sprite();
-    const graphics = new Graphics();
-    graphics.circle(0, 0, 10).fill({ color: 0xff0000 });
-    playerSprite.texture = app.renderer.generateTexture(graphics);
-    playerSprite.anchor.set(0.5);
-
-    updatePlayerPosition();
-    app.stage.addChild(playerSprite);
-};
-
 const updatePlayerPosition = () => {
     if (!playerSprite) return;
     const { screenX, screenY } = toScreenCoords(
@@ -98,7 +79,6 @@ const updatePlayerPosition = () => {
 onMounted(async () => {
     await gameStore.loadMap();
     await renderMap();
-    // await renderPlayer();
 });
 
 watch(
