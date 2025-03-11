@@ -1,5 +1,5 @@
 {
-  "name": "for-fun",
+  "name": "my-2d-game",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,11 +10,10 @@
   },
   "dependencies": {
     "pinia": "^3.0.1",
-    "pixi.js": "^8.8.1",
+    "pixi.js": "^8.0.0",
     "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@types/pixi.js": "^5.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "typescript": "~5.7.2",

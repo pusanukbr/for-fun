@@ -1,17 +1,28 @@
-<template>
-    <div id="app">
-        <h1>Моя ізометрична гра</h1>
-        <GameCanvas />
-    </div>
-</template>
-
-<script lang="ts" setup>
-import GameCanvas from './components/GameCanvas.vue';
+<script setup lang="ts">
+import Game from './components/Game.vue'
 </script>
 
+<template>
+  <Game />
+</template>
+
 <style>
+/* Скидаємо стандартні стилі браузера */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 #app {
-    text-align: center;
-    font-family: Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 </style>

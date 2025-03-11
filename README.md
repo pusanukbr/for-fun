@@ -1,18 +1,5 @@
-for-fun/
-├── public/
-│   └── tile.png         # Текстура для клітинок (поки приклад)
-├── src/
-│   ├── assets/          # Ресурси (зображення, звуки)
-│   ├── components/      # Компоненти Vue
-│   │   ├── GameCanvas.vue  # Основний канвас із Pixi.js
-│   │   └── GameScene.vue   # Логіка сцени гри (сітка, карта)
-│   ├── stores/          # Pinia-стори
-│   │   └── game.ts      # Стан гри
-│   ├── utils/           # Універсальні функції
-│   │   └── isoUtils.ts  # Ізометричні обчислення
-│   ├── types/           # Типи TypeScript
-│   │   └── game.ts      # Інтерфейси для карти
-│   ├── App.vue          # Головний компонент
-│   └── main.ts          # Точка входу
-├── tsconfig.json
-└── package.json
+# Vue 3 + TypeScript + Vite
+
+This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+
+Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
