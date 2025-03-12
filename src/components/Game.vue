@@ -4,22 +4,24 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Sprite } from 'pixi.js';
 import { useGameStore } from '../stores/gameStore';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } from '../config/constants';
+
+import { useTileSet } from "../hooks/useTile.ts";
 
 interface KeyboardControls {
     setupListeners: () => void;
     cleanupListeners: () => void;
 }
-
+const { loadTileSet, createTileSprite } = useTileSet();
 const gameContainer = ref<HTMLDivElement | null>(null);
 const gameStore = useGameStore();
 
 const app = ref<Application | null>(null);
 const worldContainer = ref<Container | null>(null);
-const playerSprite = ref<Graphics | null>(null);
+const playerSprite = ref<Sprite | null>(null);
 const keyboardControls = ref<KeyboardControls | null>(null);
 
 // 🎮 Основна ініціалізація
@@ -81,8 +83,10 @@ function destroyGame() {
 }
 
 // 💡 Створення світу
-function createWorld() {
+async function createWorld() {
     if (!worldContainer.value) return;
+
+    await loadTileSet();
 
     const grid = new Graphics()
         .setStrokeStyle({ width: 1, color: 0x333333, alpha: 0.3 });
@@ -90,13 +94,10 @@ function createWorld() {
     for (let y = 0; y < WORLD_HEIGHT; y++) {
         for (let x = 0; x < WORLD_WIDTH; x++) {
             grid.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            const tile = new Graphics()
-                .setFillStyle({ color: 0x808080 })
-                .rect(0, 0, TILE_SIZE, TILE_SIZE)
-                .fill();
-            tile.x = x * TILE_SIZE;
-            tile.y = y * TILE_SIZE;
-            worldContainer.value.addChild(tile);
+            grid.zIndex = 2;
+            const tileSprite = createTileSprite('tree', x, y, 0, 0);
+            tileSprite.zIndex = 1;
+            worldContainer.value.addChild(tileSprite);
         }
     }
 
@@ -105,16 +106,16 @@ function createWorld() {
 }
 
 // 💡 Створення гравця
-function createPlayer() {
+async function createPlayer() {
     if (!worldContainer.value) return;
 
-    const player = new Graphics()
-        .setFillStyle({ color: 0x00FF00 })
-        .rect(-TILE_SIZE, -TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        .fill();
+    await loadTileSet();
+    const tileSprite = createTileSprite('hero', 0, 0, 0, 0);
+    tileSprite.anchor.set(1);
 
-    playerSprite.value = player;
-    worldContainer.value.addChild(player);
+    playerSprite.value = tileSprite;
+    playerSprite.value.zIndex = 3;
+    worldContainer.value.addChild(tileSprite);
     updatePlayerPosition();
 }
 
