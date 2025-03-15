@@ -22,6 +22,10 @@ export interface Tile {
     type: TileType;
     x: number;
     y: number;
+    width: number;
+    height: number;
+    frameX: number;
+    frameY: number;
 }
 
 export interface Level {

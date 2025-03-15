@@ -1,16 +1,16 @@
 <template>
-  <div ref="gameContainer" class="game-container"></div>
+    <div ref="gameContainer" class="game-container"></div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
-import { Application, Container, Graphics, Sprite } from 'pixi.js';
+import {onMounted, onUnmounted, ref, watch} from 'vue';
+import {Application, Container, Sprite, Ticker} from 'pixi.js';
 import { useGameStore } from '../stores/gameStore';
 import { useKeyboard } from '../hooks/useKeyboard';
-import { TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } from '../config/constants';
+import { WORLD_WIDTH, WORLD_HEIGHT } from '../config/constants';
 import '@pixi/devtools';
 
-import { useTileSet } from "../hooks/useTile.ts";
+import { useTileSet } from '../hooks/useTile'; // Оновлений шлях до useTile
 import { useLevel } from '../hooks/useLevel';
 
 interface KeyboardControls {
@@ -18,7 +18,7 @@ interface KeyboardControls {
     cleanupListeners: () => void;
 }
 
-const { loadTileSet, createTileSprite } = useTileSet();
+const { loadTileSet, getAnimatedTexture } = useTileSet();
 const { loadLevel, createLevelSprites } = useLevel();
 const gameContainer = ref<HTMLDivElement | null>(null);
 const gameStore = useGameStore();
@@ -28,6 +28,12 @@ const worldContainer = ref<Container | null>(null);
 const playerSprite = ref<Sprite | null>(null);
 const keyboardControls = ref<KeyboardControls | null>(null);
 
+// Стан анімації героя
+const heroState = ref('IDLE'); // Поточний стан героя
+const currentFrame = ref(0);   // Поточний кадр анімації
+let frameTime = 0;             // Час, що минув для поточного кадру
+let frameDuration = 0.2;       // Тривалість кадру за замовчуванням (буде оновлено)
+
 // 🎮 Основна ініціалізація
 async function initGame() {
     if (!gameContainer.value) return;
@@ -36,28 +42,29 @@ async function initGame() {
     await app.value.init({
         background: '#1099bb',
         resizeTo: window,
-        antialias: false
+        antialias: false,
     });
 
     gameContainer.value.appendChild(app.value.canvas);
 
     // Створюємо контейнер світу
     worldContainer.value = new Container();
-    worldContainer.value.label = "World";
+    worldContainer.value.label = 'World';
     app.value.stage.addChild(worldContainer.value as Container);
 
     // Ініціалізація світу
     gameStore.initWorld(WORLD_WIDTH, WORLD_HEIGHT);
     await createWorld();
-    await createPlayer();
-
-    // Стартуємо гру
-    app.value.ticker.add(gameLoop);
 
     // Клавіатура
     const controls = useKeyboard();
     controls.setupListeners();
     keyboardControls.value = controls;
+
+    await createPlayer();
+
+    // Стартуємо гру
+    app.value.ticker.add(gameLoop);
 }
 
 // 💡 Створення світу
@@ -75,18 +82,25 @@ async function createPlayer() {
 
     await loadTileSet();
 
-    const tileSprite = createTileSprite('hero', 0, 0, 0, 0);
-    tileSprite.anchor.set(1); // Центрований спрайт
-    tileSprite.label = "Hero";
+    const heroTexture = getAnimatedTexture('hero', heroState.value, currentFrame.value);
+    console.log('🦸‍♂️ Hero texture:', heroTexture);
+    const tileSprite = new Sprite(heroTexture);
+    tileSprite.anchor.set(1);
+    tileSprite.label = 'Hero';
+    tileSprite.width = 160; // Припускаємо, що розмір у грі 32x32 (можеш змінити)
+    tileSprite.height = 160;
+    tileSprite.zIndex = 10;
 
     playerSprite.value = tileSprite;
-    playerSprite.value.zIndex = 10;
 
     // Ставимо героя в центр екрана
     tileSprite.x = app.value.screen.width / 2;
     tileSprite.y = app.value.screen.height / 2;
 
     app.value.stage.addChild(tileSprite);
+
+    // Запускаємо анімацію
+    startAnimation();
 }
 
 // 🎮 Оновлення позиції (рухаємо світ навколо героя)
@@ -105,6 +119,37 @@ function gameLoop() {
     updatePlayerPosition();
 }
 
+// 🔄 Анімація героя
+function startAnimation() {
+    app.value?.ticker.add((ticker: Ticker) => {
+        if (!playerSprite.value || !keyboardControls.value) return;
+
+        // Оновлюємо frameDuration залежно від стану
+        const heroConfig = useTileSet().mapping.hero;
+        const currentState = keyboardControls.value.heroState.value || 'IDLE'; // Додаємо запасний варіант
+        // Оновлюємо frameDuration при зміні стану
+        if (heroConfig.animations && heroConfig.animations[currentState]) {
+            frameDuration = heroConfig.animations[currentState].frameDuration;
+        } else {
+            console.warn(`Анімація для стану ${currentState} не знайдена. Використовується IDLE.`);
+            frameDuration = heroConfig.animations?.IDLE?.frameDuration || 0.2;
+        }
+
+        frameTime += ticker.deltaTime / 60; // Використовуємо ticker.deltaTime
+        if (frameTime >= frameDuration) {
+            frameTime = 0;
+            currentFrame.value++;
+            const frameCount = heroConfig.animations![currentState].frameCount;
+            if (currentFrame.value >= frameCount) {
+                currentFrame.value = 0; // Зациклюємо анімацію
+            }
+
+            // Оновлюємо текстуру героя
+            playerSprite.value.texture = getAnimatedTexture('hero', currentState, currentFrame.value);
+        }
+    });
+}
+
 // 🧹 Очищення гри
 function destroyGame() {
     console.log('🔥 Destroying game...');
@@ -116,6 +161,7 @@ function destroyGame() {
 
     if (app.value?.ticker) {
         app.value.ticker.remove(gameLoop);
+        app.value.ticker.remove(startAnimation); // Прибираємо анімацію
     }
 
     if (app.value) {
@@ -129,7 +175,7 @@ function destroyGame() {
 
 // ⛰️ Mount / Unmount
 onMounted(() => {
-    initGame().catch(err => {
+    initGame().catch((err) => {
         console.error('Error initializing game:', err);
     });
 });
@@ -142,26 +188,26 @@ onUnmounted(() => {
 <style>
 /* Видаляємо всі відступи та смуги прокрутки */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Забезпечуємо, щоб canvas займав весь екран */
 .game-container {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Забезпечуємо, щоб canvas правильно масштабувався */
 canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 </style>
