@@ -8,6 +8,7 @@ import { Application, Container, Graphics, Sprite } from 'pixi.js';
 import { useGameStore } from '../stores/gameStore';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } from '../config/constants';
+import '@pixi/devtools';
 
 import { useTileSet } from "../hooks/useTile.ts";
 
@@ -15,6 +16,7 @@ interface KeyboardControls {
     setupListeners: () => void;
     cleanupListeners: () => void;
 }
+
 const { loadTileSet, createTileSprite } = useTileSet();
 const gameContainer = ref<HTMLDivElement | null>(null);
 const gameStore = useGameStore();
@@ -39,12 +41,13 @@ async function initGame() {
 
     // Створюємо контейнер світу
     worldContainer.value = new Container();
+    worldContainer.value.label = "World";
     app.value.stage.addChild(worldContainer.value as Container);
 
     // Ініціалізація світу
     gameStore.initWorld(WORLD_WIDTH, WORLD_HEIGHT);
-    createWorld();
-    createPlayer();
+    await createWorld();
+    await createPlayer();
 
     // Стартуємо гру
     app.value.ticker.add(gameLoop);
@@ -55,33 +58,6 @@ async function initGame() {
     keyboardControls.value = controls;
 }
 
-// 🧹 Очищення гри
-function destroyGame() {
-    console.log('🔥 Destroying game...');
-
-    // Клавіатура
-    if (keyboardControls.value) {
-        keyboardControls.value.cleanupListeners();
-        keyboardControls.value = null;
-    }
-
-    // Видалення ігрового циклу перед destroy
-    if (app.value?.ticker) {
-        app.value.ticker.remove(gameLoop);
-        // app.value.ticker.destroy();
-    }
-
-    // Знищення app
-    if (app.value) {
-        app.value.destroy(true, { children: true });
-        app.value = null;
-    }
-
-    // Очищення контейнерів
-    worldContainer.value = null;
-    playerSprite.value = null;
-}
-
 // 💡 Створення світу
 async function createWorld() {
     if (!worldContainer.value) return;
@@ -90,11 +66,13 @@ async function createWorld() {
 
     const grid = new Graphics()
         .setStrokeStyle({ width: 1, color: 0x333333, alpha: 0.3 });
+    grid.label = "Grid";
 
     for (let y = 0; y < WORLD_HEIGHT; y++) {
         for (let x = 0; x < WORLD_WIDTH; x++) {
             grid.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             grid.zIndex = 2;
+
             const tileSprite = createTileSprite('tree', x, y, 0, 0);
             tileSprite.zIndex = 1;
             worldContainer.value.addChild(tileSprite);
@@ -105,28 +83,33 @@ async function createWorld() {
     worldContainer.value.addChild(grid);
 }
 
-// 💡 Створення гравця
+// 💡 Створення гравця (додаємо на stage окремо)
 async function createPlayer() {
-    if (!worldContainer.value) return;
+    if (!app.value) return;
 
     await loadTileSet();
+
     const tileSprite = createTileSprite('hero', 0, 0, 0, 0);
-    tileSprite.anchor.set(1);
+    tileSprite.anchor.set(1); // Центрований спрайт
+    tileSprite.label = "Hero";
 
     playerSprite.value = tileSprite;
-    playerSprite.value.zIndex = 3;
-    worldContainer.value.addChild(tileSprite);
-    updatePlayerPosition();
+    playerSprite.value.zIndex = 10;
+
+    // Ставимо героя в центр екрана
+    tileSprite.x = app.value.screen.width / 2;
+    tileSprite.y = app.value.screen.height / 2;
+
+    app.value.stage.addChild(tileSprite);
 }
 
-// 🎮 Оновлення позиції
+// 🎮 Оновлення позиції (рухаємо світ навколо героя)
 function updatePlayerPosition() {
-    if (!playerSprite.value || !worldContainer.value || !app.value) return;
+    if (!worldContainer.value || !app.value) return;
+
     const { x, y } = gameStore.playerPosition;
 
-    playerSprite.value.x = x;
-    playerSprite.value.y = y;
-
+    // Зміщуємо світ у зворотному напрямку, щоб герой залишався в центрі
     worldContainer.value.x = app.value.screen.width / 2 - x;
     worldContainer.value.y = app.value.screen.height / 2 - y;
 }
@@ -134,6 +117,28 @@ function updatePlayerPosition() {
 // 🔁 Ігровий цикл
 function gameLoop() {
     updatePlayerPosition();
+}
+
+// 🧹 Очищення гри
+function destroyGame() {
+    console.log('🔥 Destroying game...');
+
+    if (keyboardControls.value) {
+        keyboardControls.value.cleanupListeners();
+        keyboardControls.value = null;
+    }
+
+    if (app.value?.ticker) {
+        app.value.ticker.remove(gameLoop);
+    }
+
+    if (app.value) {
+        app.value.destroy(true, { children: true });
+        app.value = null;
+    }
+
+    worldContainer.value = null;
+    playerSprite.value = null;
 }
 
 // ⛰️ Mount / Unmount

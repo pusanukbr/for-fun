@@ -63,6 +63,7 @@ export const useTileSet = (config: Partial<TileSetConfig> = {}) => {
 
         sprite.width = tileSize;
         sprite.height = tileSize;
+        sprite.label = `tile-${type}-${x}-${y}`;
 
         const { screenX, screenY } = toScreenCoords(x, y);
         sprite.x = screenX + offsetX;
