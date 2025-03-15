@@ -1,4 +1,22 @@
-export type TileType = 'grass' | 'stone' | 'water' | 'tree' | 'hero' | 'wall' | 'wall-top-left-angle' | 'wall-top-right-angle' | 'wall-bottom-left-angle' | 'wall-bottom-right-angle' | 'wall-sides' | 'floor' | 'enemy' | 'exit';
+// ground - базовий шар з травою
+// objects - шар зі стінами та іншими об'єктами
+// decorations - шар з героєм, виходом та іншими декоративними елементами
+
+export type TileType = 
+    | 'wall'
+    | 'wall-top-left-angle'
+    | 'wall-top-right-angle'
+    | 'wall-bottom-left-angle'
+    | 'wall-bottom-right-angle'
+    | 'wall-sides'
+    | 'floor'
+    | 'water'
+    | 'grass'
+    | 'tree'
+    | 'stone'
+    | 'hero'
+    | 'enemy'
+    | 'exit';
 
 export interface Tile {
     type: TileType;
@@ -11,13 +29,14 @@ export interface Level {
     name: string;
     width: number;
     height: number;
-    // Матриця рівня, де кожен символ відповідає певному типу тайла
-    map: string[];
     spawnPoint: {
         x: number;
         y: number;
     };
-    background?: string;
+    layers: {
+        name: string;        // Назва шару (наприклад, "ground", "objects", "decorations")
+        map: string[][];     // Карта шару
+    }[];
 }
 
 export interface LevelData {
@@ -26,18 +45,18 @@ export interface LevelData {
 
 // Маппінг символів на типи тайлів
 export const TILE_MAPPING: Record<string, TileType> = {
-    '.': 'grass',    // Трава
-    '#': 'wall',     // Стіна
-    'E': 'enemy',    // Ворог
-    'X': 'exit',     // Вихід
-    'W': 'wall-top-left-angle',    // Стіна з верхнім лівим кутом
-    'w': 'wall-top-right-angle',   // Стіна з верхнім правим кутом
-    'Q': 'wall-bottom-left-angle', // Стіна з нижнім лівим кутом
-    'q': 'wall-bottom-right-angle',// Стіна з нижнім правим кутом
-    'H': 'wall-sides',         // Стіна зі сторонами
-    '~': 'water',    // Вода
-    'T': 'tree',     // Дерево
-    'S': 'stone',    // Камінь
-    'F': 'floor',    // Підлога
-    '@': 'hero'      // Герой
+    '#': 'wall',
+    'W': 'wall-top-left-angle',
+    'w': 'wall-top-right-angle',
+    'Q': 'wall-bottom-left-angle',
+    'q': 'wall-bottom-right-angle',
+    'H': 'wall-sides',
+    '.': 'floor',
+    '~': 'water',
+    'G': 'grass',
+    'T': 'tree',
+    'S': 'stone',
+    '@': 'hero',
+    'E': 'enemy',
+    'X': 'exit'
 }; 

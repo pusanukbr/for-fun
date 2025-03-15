@@ -37,33 +37,38 @@ export const useLevel = () => {
         // Очищаємо контейнер
         container.removeChildren();
 
-        const { map, width, height } = currentLevel.value;
+        const { layers, width, height } = currentLevel.value;
 
-        // Перевіряємо, чи відповідають розміри карти
-        if (map.length !== height) {
-            console.error('Неправильна висота карти рівня');
-            return;
-        }
-
-        // Перевіряємо ширину кожного рядка
-        for (let y = 0; y < height; y++) {
-            if (map[y].length !== width) {
-                console.error(`Неправильна ширина карти рівня в рядку ${y}`);
-                return;
+        // Перевіряємо кожен шар
+        for (const layer of layers) {
+            // Перевіряємо, чи відповідають розміри карти
+            if (layer.map.length !== height) {
+                console.error(`Неправильна висота карти рівня в шарі ${layer.name}`);
+                continue;
             }
-        }
 
-        // Створюємо спрайти для кожного тайла
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const tileSymbol = map[y][x];
-                const tileType = TILE_MAPPING[tileSymbol];
-                
-                if (tileType) {
-                    const sprite = createTileSprite(tileType, x, y, 0, 0);
-                    container.addChild(sprite);
-                } else {
-                    console.warn(`Невідомий символ тайла: ${tileSymbol} на позиції (${x}, ${y})`);
+            // Перевіряємо ширину кожного рядка
+            for (let y = 0; y < height; y++) {
+                if (layer.map[y].length !== width) {
+                    console.error(`Неправильна ширина карти рівня в рядку ${y} шару ${layer.name}`);
+                    continue;
+                }
+            }
+
+            // Створюємо спрайти для кожного тайла в шарі
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const tileSymbol = layer.map[y][x];
+                    if (tileSymbol === '.') continue; // Ігноруємо порожні клітинки
+
+                    const tileType = TILE_MAPPING[tileSymbol];
+                    
+                    if (tileType) {
+                        const sprite = createTileSprite(tileType, x, y, 0, 0);
+                        container.addChild(sprite);
+                    } else {
+                        console.warn(`Невідомий символ тайла: ${tileSymbol} на позиції (${x}, ${y}) в шарі ${layer.name}`);
+                    }
                 }
             }
         }
