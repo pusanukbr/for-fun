@@ -11,6 +11,7 @@ import { TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } from '../config/constants';
 import '@pixi/devtools';
 
 import { useTileSet } from "../hooks/useTile.ts";
+import { useLevel } from '../hooks/useLevel';
 
 interface KeyboardControls {
     setupListeners: () => void;
@@ -18,6 +19,7 @@ interface KeyboardControls {
 }
 
 const { loadTileSet, createTileSprite } = useTileSet();
+const { loadLevel, createLevelSprites } = useLevel();
 const gameContainer = ref<HTMLDivElement | null>(null);
 const gameStore = useGameStore();
 
@@ -62,25 +64,9 @@ async function initGame() {
 async function createWorld() {
     if (!worldContainer.value) return;
 
-    await loadTileSet();
+    await loadLevel('level1');
 
-    const grid = new Graphics()
-        .setStrokeStyle({ width: 1, color: 0x333333, alpha: 0.3 });
-    grid.label = "Grid";
-
-    for (let y = 0; y < WORLD_HEIGHT; y++) {
-        for (let x = 0; x < WORLD_WIDTH; x++) {
-            grid.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            grid.zIndex = 2;
-
-            const tileSprite = createTileSprite('tree', x, y, 0, 0);
-            tileSprite.zIndex = 1;
-            worldContainer.value.addChild(tileSprite);
-        }
-    }
-
-    grid.stroke();
-    worldContainer.value.addChild(grid);
+    createLevelSprites(worldContainer.value as Container);
 }
 
 // 💡 Створення гравця (додаємо на stage окремо)

@@ -25,6 +25,14 @@ const defaultTileSetConfig: TileSetConfig = {
         water: { x: 4, y: 1 },
         tree: { x: 4, y: 2 },
         hero: { x: 54, y: 10 },
+        enemy: { x: 56, y: 10 },
+        wall: { x: 44, y: 1 },
+        'wall-top-left-angle': { x: 45, y: 2 },
+        'wall-top-right-angle': { x: 47, y: 2 },
+        'wall-bottom-left-angle': { x: 45, y: 4 },
+        'wall-bottom-right-angle': { x: 47, y: 4 },
+        'wall-sides': { x: 44, y: 2 },
+
     },
 };
 
