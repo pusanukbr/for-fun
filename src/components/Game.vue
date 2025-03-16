@@ -3,11 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, watch} from 'vue';
+import {onMounted, onUnmounted, ref} from 'vue';
 import {Application, Container, Sprite, Ticker} from 'pixi.js';
 import { useGameStore } from '../stores/gameStore';
 import { useKeyboard } from '../hooks/useKeyboard';
-import { WORLD_WIDTH, WORLD_HEIGHT } from '../config/constants';
+import {TILE_SIZE} from '../config/constants';
 import '@pixi/devtools';
 
 import { useTileSet } from '../hooks/useTile'; // Оновлений шлях до useTile
@@ -53,7 +53,7 @@ async function initGame() {
     app.value.stage.addChild(worldContainer.value as Container);
 
     // Ініціалізація світу
-    gameStore.initWorld(WORLD_WIDTH, WORLD_HEIGHT);
+    gameStore.initWorld();
     await createWorld();
 
     // Клавіатура
@@ -83,12 +83,12 @@ async function createPlayer() {
     await loadTileSet();
 
     const heroTexture = getAnimatedTexture('hero', heroState.value, currentFrame.value);
-    console.log('🦸‍♂️ Hero texture:', heroTexture);
+
     const tileSprite = new Sprite(heroTexture);
     tileSprite.anchor.set(1);
     tileSprite.label = 'Hero';
-    tileSprite.width = 160; // Припускаємо, що розмір у грі 32x32 (можеш змінити)
-    tileSprite.height = 160;
+    tileSprite.width = TILE_SIZE; // Припускаємо, що розмір у грі 32x32 (можеш змінити)
+    tileSprite.height = TILE_SIZE;
     tileSprite.zIndex = 10;
 
     playerSprite.value = tileSprite;
@@ -121,7 +121,8 @@ function gameLoop() {
 
 // 🔄 Анімація героя
 function startAnimation() {
-    app.value?.ticker.add((ticker: Ticker) => {
+    if(!app.value) return;
+    app.value.ticker.add((ticker: Ticker) => {
         if (!playerSprite.value || !keyboardControls.value) return;
 
         // Оновлюємо frameDuration залежно від стану

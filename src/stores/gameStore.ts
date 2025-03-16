@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import {TILE_SIZE} from "../config/constants.ts";
 
 interface Position {
   x: number;
@@ -12,7 +13,7 @@ export const useGameStore = defineStore('game', {
 
   actions: {
     movePlayer(direction: 'up' | 'down' | 'left' | 'right') {
-      const step = 32;
+      const step = TILE_SIZE;
       this.$patch((state) => {
         state.playerPosition = {
           ...state.playerPosition,
@@ -29,8 +30,8 @@ export const useGameStore = defineStore('game', {
       });
     },
 
-    initWorld(width: number, height: number) {
-      this.playerPosition = { x: width * 16, y: height * 16 };
+    initWorld() {
+      this.playerPosition = { x: 10 * TILE_SIZE, y: 10 * TILE_SIZE };
     },
   },
 });

@@ -68,7 +68,7 @@ const defaultTileSetConfig: TileSetConfig = {
                 },
                 ATTACK: {
                     texturePath: '/assets/hero/hero_attack.png',
-                    tileSize: 16,
+                    tileSize: 96,
                     frameCount: 9,
                     frameDuration: 0.15,
                     direction: 'horizontal',
@@ -77,7 +77,7 @@ const defaultTileSetConfig: TileSetConfig = {
                 },
                 JUMP: {
                     texturePath: '/assets/hero/hero_jump.png',
-                    tileSize: 16,
+                    tileSize: 96,
                     frameCount: 9,
                     frameDuration: 0.3,
                     direction: 'horizontal',
@@ -90,7 +90,7 @@ const defaultTileSetConfig: TileSetConfig = {
             animations: {
                 IDLE: {
                     texturePath: '/assets/enemy/enemy_idle.png',
-                    tileSize: 16,
+                    tileSize: 96,
                     frameCount: 9,
                     frameDuration: 0.2,
                     direction: 'horizontal',
@@ -232,7 +232,7 @@ export const useTileSet = (config: Partial<TileSetConfig> = {}) => {
             frameX * anim.tileSize,
             frameY * anim.tileSize,
             anim.tileSize,
-            anim.tileSize
+            baseTexture.height
         );
 
         return new Texture({source: baseTexture, frame});

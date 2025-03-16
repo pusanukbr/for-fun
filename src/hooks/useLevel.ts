@@ -3,6 +3,7 @@ import type { Level, LevelData, Tile } from '../types/level';
 import { TILE_MAPPING } from '../types/level';
 import { useTileSet } from './useTile';
 import { Container, Sprite } from 'pixi.js';
+import {TILE_SIZE} from "../config/constants.ts";
 
 export const useLevel = () => {
     const currentLevel = ref<Level | null>(null);
@@ -75,11 +76,11 @@ export const useLevel = () => {
                         if (tileConfig?.animations) {
                             const state = Object.keys(tileConfig.animations)[0]; // Перший стан (наприклад, IDLE для ворога)
                             const sprite = new Sprite(getAnimatedTexture(tileType, state, 0));
-                            sprite.width = 32; // Масштабуємо до 32x32
-                            sprite.height = 32;
+                            sprite.width = TILE_SIZE;
+                            sprite.height = TILE_SIZE;
                             sprite.label = `tile-${tileType}-${x}-${y}`;
-                            sprite.x = x * 32; // Позиція в світі (масштабуємо до 32x32)
-                            sprite.y = y * 32;
+                            sprite.x = x * TILE_SIZE;
+                            sprite.y = y * TILE_SIZE;
                             sprite.zIndex = 1;
 
                             container.addChild(sprite);
@@ -100,8 +101,8 @@ export const useLevel = () => {
                                 type: tileType,
                                 x,
                                 y,
-                                width: 32,
-                                height: 32,
+                                width: TILE_SIZE,
+                                height: TILE_SIZE,
                                 frameX: 0,
                                 frameY: 0,
                             };
