@@ -87,7 +87,7 @@ async function createPlayer() {
     const tileSprite = new Sprite(heroTexture);
     tileSprite.anchor.set(1);
     tileSprite.label = 'Hero';
-    tileSprite.width = TILE_SIZE; // Припускаємо, що розмір у грі 32x32 (можеш змінити)
+    tileSprite.width = TILE_SIZE;
     tileSprite.height = TILE_SIZE;
     tileSprite.zIndex = 10;
 

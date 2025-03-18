@@ -230,7 +230,7 @@ export const useTileSet = (config: Partial<TileSetConfig> = {}) => {
 
         const frame = new Rectangle(
             frameX * anim.tileSize,
-            frameY * anim.tileSize,
+            frameY * baseTexture.height,
             anim.tileSize,
             baseTexture.height
         );
