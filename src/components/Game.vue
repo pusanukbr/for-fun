@@ -29,10 +29,12 @@ const playerSprite = ref<Sprite | null>(null);
 const keyboardControls = ref<KeyboardControls | null>(null);
 
 // Стан анімації героя
-const heroState = ref('IDLE'); // Поточний стан героя
+// const heroState = ref('IDLE_BOTTOM'); // Поточний стан героя
 const currentFrame = ref(0);   // Поточний кадр анімації
 let frameTime = 0;             // Час, що минув для поточного кадру
 let frameDuration = 0.2;       // Тривалість кадру за замовчуванням (буде оновлено)
+const { heroState } = useKeyboard();
+let animationHeroTickHandler: ((ticker: Ticker) => void) | null = null;
 
 // 🎮 Основна ініціалізація
 async function initGame() {
@@ -58,6 +60,7 @@ async function initGame() {
 
     // Клавіатура
     const controls = useKeyboard();
+
     controls.setupListeners();
     keyboardControls.value = controls;
 
@@ -121,14 +124,13 @@ function gameLoop() {
 
 // 🔄 Анімація героя
 function startAnimation() {
-    if(!app.value) return;
-    app.value.ticker.add((ticker: Ticker) => {
+    if (!app.value) return;
+
+    animationHeroTickHandler = (ticker: Ticker) => {
         if (!playerSprite.value || !keyboardControls.value) return;
 
-        // Оновлюємо frameDuration залежно від стану
         const heroConfig = useTileSet().mapping.hero;
-        const currentState = keyboardControls.value.heroState.value || 'IDLE'; // Додаємо запасний варіант
-        // Оновлюємо frameDuration при зміні стану
+        const currentState = heroState.value;
         if (heroConfig.animations && heroConfig.animations[currentState]) {
             frameDuration = heroConfig.animations[currentState].frameDuration;
         } else {
@@ -136,19 +138,20 @@ function startAnimation() {
             frameDuration = heroConfig.animations?.IDLE?.frameDuration || 0.2;
         }
 
-        frameTime += ticker.deltaTime / 60; // Використовуємо ticker.deltaTime
+        frameTime += ticker.deltaTime / 60;
         if (frameTime >= frameDuration) {
             frameTime = 0;
             currentFrame.value++;
             const frameCount = heroConfig.animations![currentState].frameCount;
             if (currentFrame.value >= frameCount) {
-                currentFrame.value = 0; // Зациклюємо анімацію
+                currentFrame.value = 0;
             }
 
-            // Оновлюємо текстуру героя
             playerSprite.value.texture = getAnimatedTexture('hero', currentState, currentFrame.value);
         }
-    });
+    };
+
+    app.value.ticker.add(animationHeroTickHandler);
 }
 
 // 🧹 Очищення гри
@@ -160,9 +163,9 @@ function destroyGame() {
         keyboardControls.value = null;
     }
 
-    if (app.value?.ticker) {
+    if (animationHeroTickHandler && app.value?.ticker) {
         app.value.ticker.remove(gameLoop);
-        app.value.ticker.remove(startAnimation); // Прибираємо анімацію
+        app.value.ticker.remove(animationHeroTickHandler); // Прибираємо анімацію
     }
 
     if (app.value) {

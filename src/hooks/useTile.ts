@@ -48,13 +48,40 @@ const defaultTileSetConfig: TileSetConfig = {
         'wall-sides': { x: 44, y: 2 },
         hero: {
             animations: {
-                IDLE: {
-                    texturePath: '/assets/hero/hero_idle.png',
-                    tileSize: 96,
-                    frameCount: 9,
+                IDLE_BOTTOM: {
+                    texturePath: '/assets/hero/bob_idle.png',
+                    tileSize: 16,
+                    frameCount: 6,
+                    frameDuration: 0.06,
+                    direction: 'horizontal',
+                    startX: 18,
+                    startY: 0,
+                },
+                IDLE_LEFT: {
+                    texturePath: '/assets/hero/bob_idle.png',
+                    tileSize: 16,
+                    frameCount: 6,
+                    frameDuration: 0.06,
+                    direction: 'horizontal',
+                    startX: 12,
+                    startY: 0,
+                },
+                IDLE_RIGHT: {
+                    texturePath: '/assets/hero/bob_idle.png',
+                    tileSize: 16,
+                    frameCount: 6,
                     frameDuration: 0.06,
                     direction: 'horizontal',
                     startX: 0,
+                    startY: 0,
+                },
+                IDLE_TOP: {
+                    texturePath: '/assets/hero/bob_idle.png',
+                    tileSize: 16,
+                    frameCount: 6,
+                    frameDuration: 0.06,
+                    direction: 'horizontal',
+                    startX: 6,
                     startY: 0,
                 },
                 RUN: {
