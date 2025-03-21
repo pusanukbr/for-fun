@@ -12,7 +12,6 @@ export interface AnimationState {
     startY?: number;          // Початкова позиція Y (за замовчуванням 0)
 }
 
-// Тип для мапінгу типів тайлів
 export interface TileSetMapping {
     [key: string]: {
         x?: number;               // Позиція X (для статичних тайлів)
@@ -25,7 +24,6 @@ export interface TileSetMapping {
     };
 }
 
-// Конфігурація tileset
 export interface TileSetConfig {
     defaultTexturePath: string;
     defaultTileSize: number;
@@ -129,7 +127,6 @@ const defaultTileSetConfig: TileSetConfig = {
     },
 };
 
-// Функція для роботи з tileset
 export const useTileSet = (config: Partial<TileSetConfig> = {}) => {
     const finalConfig = { ...defaultTileSetConfig, ...config };
     const { defaultTexturePath, defaultTileSize, mapping } = finalConfig;
@@ -140,12 +137,10 @@ export const useTileSet = (config: Partial<TileSetConfig> = {}) => {
     const loadTileSet = async () => {
         const texturePaths = new Set<string>();
 
-        // Додаємо defaultTexturePath, якщо він існує
         if (defaultTexturePath) {
             texturePaths.add(defaultTexturePath);
         }
 
-        // Додаємо texturePath із mapping
         Object.values(mapping).forEach((tile) => {
             if (tile.texturePath) {
                 texturePaths.add(tile.texturePath);
@@ -159,7 +154,6 @@ export const useTileSet = (config: Partial<TileSetConfig> = {}) => {
             }
         });
 
-        // Фільтруємо undefined і порожні рядки
         const pathsArray = [...texturePaths].filter((path) => path && typeof path === 'string');
         if (pathsArray.length === 0) {
             console.warn('Немає текстур для завантаження');
